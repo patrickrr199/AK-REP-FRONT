@@ -24,7 +24,7 @@
     <h3 class="section-title">Comentarios</h3>
     <div v-for="c in comments" :key="c.id" class="comment">
       <!-- VULN: xss-stored — comment body rendered with v-html, no sanitization -->
-      <div v-html="c.body"></div>
+      <div v-html="sanitizeHtml(c.body)"></div>
     </div>
 
     <div class="card" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px">
@@ -35,6 +35,7 @@
 </template>
 
 <script setup>
+import DOMPurify from 'dompurify'
 import { ref, onMounted } from 'vue'
 import { api } from '../api/client'
 import { currentUser } from '../store/auth'
@@ -69,6 +70,15 @@ async function postComment() {
   })
   newComment.value = ''
   load()
+}
+
+function sanitizeHtml(html) {
+  return html
+    ? DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['span', 'p'],
+        ALLOWED_ATTR: ['class'],
+      })
+    : '';
 }
 
 onMounted(load)
