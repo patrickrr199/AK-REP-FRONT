@@ -7,7 +7,7 @@
     </div>
 
     <!-- VULN: xss-reflected — search term rendered with v-html, no escaping -->
-    <p class="muted" v-html="resultsLabel"></p>
+    <p class="muted" v-html="sanitizeHtml(resultsLabel)"></p>
 
     <div class="product-grid">
       <router-link v-for="p in products" :key="p.id" :to="`/products/${p.id}`" class="product-card">
@@ -20,6 +20,7 @@
 </template>
 
 <script setup>
+import DOMPurify from 'dompurify'
 import { ref } from 'vue'
 import { api } from '../api/client'
 
@@ -35,4 +36,13 @@ async function search() {
 }
 
 search()
+
+function sanitizeHtml(html) {
+  return html
+    ? DOMPurify.sanitize(html, {
+        ALLOWED_TAGS: ['span', 'p'],
+        ALLOWED_ATTR: ['class'],
+      })
+    : '';
+}
 </script>
